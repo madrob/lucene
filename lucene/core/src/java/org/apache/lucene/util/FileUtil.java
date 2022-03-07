@@ -21,22 +21,20 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Supplemental methods for working with Files and Paths
- */
+/** Supplemental methods for working with Files and Paths */
 public final class FileUtil {
-    private FileUtil() {} // no instance
+  private FileUtil() {} // no instance
 
-    public static Path safeCreateDirectories(Path path) throws IOException {
-        try {
-            return Files.createDirectories(path);
-        } catch (FileAlreadyExistsException e) {
-            // ignore exception if it is a symbolic link to a directory
-            if (Files.isDirectory(path)) {
-                return path;
-            }
+  public static Path safeCreateDirectories(Path path) throws IOException {
+    try {
+      return Files.createDirectories(path);
+    } catch (FileAlreadyExistsException e) {
+      // ignore exception if it is a symbolic link to a directory
+      if (Files.isDirectory(path)) {
+        return path;
+      }
 
-            throw e;
-        }
+      throw e;
     }
+  }
 }

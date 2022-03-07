@@ -273,7 +273,7 @@ final class TestRuleTemporaryFilesCleanup extends TestRuleAdapter {
     Path base = getPerTestClassTempDir();
 
     int attempt = 0;
-    while(true) {
+    while (true) {
       if (attempt++ >= TEMP_NAME_RETRY_THRESHOLD) {
         throw new RuntimeException(
             "Failed to get a temporary name too many times, check your temp directory and consider manually cleaning it: "
@@ -289,7 +289,9 @@ final class TestRuleTemporaryFilesCleanup extends TestRuleAdapter {
           try {
             registerToRemoveAfterSuite(Files.createSymbolicLink(link, f));
             f = link;
-          } catch (@SuppressWarnings("unused") IOException ignore) {
+          } catch (
+              @SuppressWarnings("unused")
+              IOException ignore) {
             // Couldn't create the link, but we can still return the real directory
           }
         }
