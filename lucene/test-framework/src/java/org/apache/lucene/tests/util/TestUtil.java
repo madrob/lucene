@@ -107,6 +107,7 @@ import org.apache.lucene.util.AttributeImpl;
 import org.apache.lucene.util.AttributeReflector;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.CharsRef;
+import org.apache.lucene.util.FileUtil;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.UnicodeUtil;
 import org.junit.Assert;
@@ -154,13 +155,7 @@ public final class TestUtil {
 
         // be on the safe side: do not rely on that directories are always extracted
         // before their children (although this makes sense, but is it guaranteed?)
-        try {
-          Files.createDirectories(targetFile.getParent());
-        } catch (FileAlreadyExistsException e) {
-          if (! Files.isDirectory(targetFile.getParent())) {
-            throw e;
-          }
-        }
+        FileUtil.safeCreateDirectories(targetFile.getParent());
         if (!entry.isDirectory()) {
           OutputStream out = Files.newOutputStream(targetFile);
           int len;
