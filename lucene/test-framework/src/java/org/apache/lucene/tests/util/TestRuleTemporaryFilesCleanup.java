@@ -273,29 +273,33 @@ final class TestRuleTemporaryFilesCleanup extends TestRuleAdapter {
     Path base = getPerTestClassTempDir();
 
     int attempt = 0;
-    Path f, sl;
-    boolean success = false;
-    do {
+    while(true) {
       if (attempt++ >= TEMP_NAME_RETRY_THRESHOLD) {
         throw new RuntimeException(
             "Failed to get a temporary name too many times, check your temp directory and consider manually cleaning it: "
                 + base.toAbsolutePath());
       }
-      f = base.resolve(prefix + "-" + String.format(Locale.ENGLISH, "%03d", attempt));
       try {
+        Path f = base.resolve(prefix + "-" + String.format(Locale.ENGLISH, "%03d", attempt));
         registerToRemoveAfterSuite(Files.createDirectory(f));
-        // TODO, randomly do this
-        sl = f.resolveSibling(f.getFileName().toString() + "-link");
-        registerToRemoveAfterSuite(Files.createSymbolicLink(sl, f));
-        f = sl;
-        success = true;
+
+        // Sometimes provide a symlink to a temp directory instead of the directory itself
+        if (LuceneTestCase.random().nextBoolean()) {
+          Path link = f.resolveSibling(f.getFileName().toString() + "-link");
+          try {
+            registerToRemoveAfterSuite(Files.createSymbolicLink(link, f));
+            f = link;
+          } catch (@SuppressWarnings("unused") IOException ignore) {
+            // Couldn't create the link, but we can still return the real directory
+          }
+        }
+
+        return f;
       } catch (
           @SuppressWarnings("unused")
           IOException ignore) {
       }
-    } while (!success);
-
-    return f;
+    }
   }
 
   /** @see LuceneTestCase#createTempFile() */
