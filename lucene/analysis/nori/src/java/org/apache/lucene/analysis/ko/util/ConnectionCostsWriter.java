@@ -26,6 +26,7 @@ import org.apache.lucene.analysis.ko.dict.ConnectionCosts;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.store.DataOutput;
 import org.apache.lucene.store.OutputStreamDataOutput;
+import org.apache.lucene.util.FileUtil;
 
 final class ConnectionCostsWriter {
 
@@ -47,7 +48,7 @@ final class ConnectionCostsWriter {
   }
 
   public void write(Path baseDir) throws IOException {
-    Files.createDirectories(baseDir);
+    FileUtil.safeCreateDirectories(baseDir);
     String fileName =
         ConnectionCosts.class.getName().replace('.', '/') + ConnectionCosts.FILENAME_SUFFIX;
     try (OutputStream os = Files.newOutputStream(baseDir.resolve(fileName));
