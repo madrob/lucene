@@ -273,7 +273,7 @@ final class TestRuleTemporaryFilesCleanup extends TestRuleAdapter {
     Path base = getPerTestClassTempDir();
 
     int attempt = 0;
-    Path f;
+    Path f, sl;
     boolean success = false;
     do {
       if (attempt++ >= TEMP_NAME_RETRY_THRESHOLD) {
@@ -283,7 +283,11 @@ final class TestRuleTemporaryFilesCleanup extends TestRuleAdapter {
       }
       f = base.resolve(prefix + "-" + String.format(Locale.ENGLISH, "%03d", attempt));
       try {
-        Files.createDirectory(f);
+        registerToRemoveAfterSuite(Files.createDirectory(f));
+        // TODO, randomly do this
+        sl = f.resolveSibling(f.getFileName().toString() + "-link");
+        registerToRemoveAfterSuite(Files.createSymbolicLink(sl, f));
+        f = sl;
         success = true;
       } catch (
           @SuppressWarnings("unused")
@@ -291,7 +295,6 @@ final class TestRuleTemporaryFilesCleanup extends TestRuleAdapter {
       }
     } while (!success);
 
-    registerToRemoveAfterSuite(f);
     return f;
   }
 

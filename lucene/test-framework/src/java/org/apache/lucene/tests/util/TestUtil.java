@@ -28,6 +28,7 @@ import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -153,7 +154,13 @@ public final class TestUtil {
 
         // be on the safe side: do not rely on that directories are always extracted
         // before their children (although this makes sense, but is it guaranteed?)
-        Files.createDirectories(targetFile.getParent());
+        try {
+          Files.createDirectories(targetFile.getParent());
+        } catch (FileAlreadyExistsException e) {
+          if (! Files.isDirectory(targetFile.getParent())) {
+            throw e;
+          }
+        }
         if (!entry.isDirectory()) {
           OutputStream out = Files.newOutputStream(targetFile);
           int len;
