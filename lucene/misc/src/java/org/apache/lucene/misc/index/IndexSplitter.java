@@ -31,7 +31,7 @@ import org.apache.lucene.index.SegmentCommitInfo;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.FileUtil;
+import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.SuppressForbidden;
 
 /**
@@ -117,7 +117,7 @@ public class IndexSplitter {
   }
 
   public void split(Path destDir, String[] segs) throws IOException {
-    FileUtil.safeCreateDirectories(destDir);
+    IOUtils.createDirectoriesAndFollowSymlinks(destDir);
     FSDirectory destFSDir = FSDirectory.open(destDir);
     SegmentInfos destInfos = new SegmentInfos(infos.getIndexCreatedVersionMajor());
     destInfos.counter = infos.counter;

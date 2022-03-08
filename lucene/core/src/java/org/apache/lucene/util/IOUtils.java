@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -172,6 +174,30 @@ public final class IOUtils {
       throw new FileNotFoundException("The resource '" + name + "' was not found.");
     }
     return resource;
+  }
+
+  /**
+   * Creates a directory and all non-existent parent directories. Unlike {@link
+   * Files#createDirectories(Path, FileAttribute[])}, will not throw exception if path exists, is a
+   * directory, and is a symlink.
+   *
+   * @param path the directory to create
+   * @return the directory
+   * @throws IOException if an I/O error occurs
+   * @throws SecurityException if a security manager is in use and checkRead or checkWrite disallow
+   *     access
+   */
+  public static Path createDirectoriesAndFollowSymlinks(Path path) throws IOException {
+    try {
+      return Files.createDirectories(path);
+    } catch (FileAlreadyExistsException e) {
+      // ignore exception if it is a symbolic link to a directory
+      if (Files.isDirectory(path)) {
+        return path;
+      }
+
+      throw e;
+    }
   }
 
   /**
