@@ -33,6 +33,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.tests.analysis.MockAnalyzer;
@@ -331,6 +332,33 @@ public class TestFuzzyQuery extends LuceneTestCase {
     reader.close();
     directory.close();
   }
+
+  public void testExactMatchBeatsMultipleTerms() throws IOException {
+    Directory directory = newDirectory();
+    RandomIndexWriter writer = new RandomIndexWriter(random(), directory);
+
+    addDoc("spark spark", writer); // exact match
+    addDoc("spar spars", writer); // multiple fuzzy match terms
+
+    IndexReader reader = writer.getReader();
+    IndexSearcher searcher = newSearcher(reader);
+    searcher.setSimilarity(new ClassicSimilarity());
+
+    writer.close();
+    FuzzyQuery query = new FuzzyQuery(new Term("field", "spark"), 2, 3);
+    ScoreDoc[] hits = searcher.search(query, 10).scoreDocs;
+
+    assertEquals(2, hits.length);
+    Document bestDoc = searcher.doc(hits[0].doc);
+
+    System.out.println(searcher.explain(query, hits[1].doc).toString());
+
+    String topMatch = bestDoc.get("field");
+    assertEquals(searcher.explain(query, hits[0].doc).toString(), "spark", topMatch);
+
+    reader.close();
+    directory.close();
+}
 
   public void testMultipleQueriesIdfWorks() throws Exception {
     // With issue LUCENE-329 - it could be argued a
